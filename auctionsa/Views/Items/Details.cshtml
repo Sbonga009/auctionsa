@@ -1,0 +1,146 @@
+﻿@model auctionsa.Models.Item
+
+@{
+  ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div class="container">
+  <div class="row">
+    <div class="col col-6">
+      <div id="myCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          @for (int i = 0; i < Model.Images.Count; i++)
+          {
+            var imageUrl = Model.Images[i];
+            <div class="carousel-item @(i == 0 ? "active" : "")">
+              <img src="@Url.Content($"~/{imageUrl}")" class="d-block w-100" alt="Image @i">
+            </div>
+          }
+        </div>
+        <button class="carousel-control-prev rounded-circle" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+      <div class="row mt-3">
+        @foreach (var image in Model.Images)
+        {
+          <div class="col-3">
+            <img src="@Url.Content($"~/{image}")" class="img-thumbnail" alt="Thumbnail" />
+          </div>
+        }
+      </div>
+    </div>
+    <div class="col col-6">
+      <div class="col col-12 mb-2">
+        <div class="container p-4 card shadow">
+          <div>
+            <p class="h4 mb-2 text-center">@Model.Name</p>
+            <p>@Model.Description</p>
+          </div>
+          <div class="col">
+            Time left: <span id="countdown-@Model.Id" data-enddate="@Model.EndDate.ToString("o")"></span>
+          </div>
+          <div class="d-inline-flex mb-2">
+            <p class="flex-grow-1">
+              Price:
+              <span>@Model.Price.ToString("C")</span>
+            </p>
+            <p>Current Bid:</p>
+            <span>
+              @{
+                if (Model.Bids == null || !Model.Bids.Any())
+                {
+                  <span>No bids yet</span>
+                }
+                else
+                {
+                  var highestBid = Model.Bids.Max(b => b.Price);
+                  <span>@highestBid.ToString("C")</span>
+                }
+              }
+            </span>
+          </div>
+
+          @if (ViewBag.CurrentUserId != Model.IdentityUserId)
+          {
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              Place Bid
+            </button>
+          }
+          <!-- Modal -->
+          <form asp-action="PlaceBid" asp-controller="Items" method="post">
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" area-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <label for="bidAmount" class="form-label">Your Bid Amount:</label>
+                    <input type="number" step="0.01" name="bidAmount" class="form-control" min="@Model.Price" placeholder="Enter your bid" required>
+                    <span class="text-danger"></span>
+
+                    <label for="comment" class="form-label mt-3">Your Comment:</label>
+                    <textarea name="comment" class="form-control" rows="3" placeholder="Enter your comment"></textarea>
+                  </div>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <input type="hidden" name="itemId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      @if (Model.Bids != null && Model.Bids.Any())
+      {
+        <div class="card mb-3 border-0 shadow-lg rounded-3">
+          <div class="card-body bg-primary text-white rounded">
+            <h5 class="card-title">Bids History</h5>
+            <p class="card-text">Current highest bid: @Model.Bids.Max(b => b.Price).ToString("C")</p>
+
+            @foreach (var bid in Model.Bids.OrderByDescending(b => b.Price))
+            {
+              <div class="card mt-3 border-0 shadow rounded-3">
+                <div class="card-body bg-light rounded">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0">@bid.User.UserName</h6>
+                    <span class="badge bg-primary">@bid.Price.ToString("C")</span>
+                  </div>
+                  @if (!string.IsNullOrEmpty(bid.Comment))
+                  {
+                    <p class="card-text mt-2 mb-0 text-muted">
+                      <i class="bi bi-chat-quote"></i> @bid.Comment
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      else
+      {
+        <div class="card mb-3 border-0 shadow-lg rounded-3 animate__animated animate__fadeIn">
+          <div class="card-body bg-light rounded">
+            <p class="card-text text-center mb-0">No bids yet. Be the first to bid!</p>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
+

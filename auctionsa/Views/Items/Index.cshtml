@@ -1,0 +1,63 @@
+﻿@model IEnumerable<auctionsa.Models.Item>
+
+@{
+  ViewData["Title"] = "Auction Items";
+}
+
+<h1 class="text-center my-4">Available Auction Items</h1>
+
+<div class="container">
+  <div class="row">
+    @if (Model == null || !Model.Any())
+    {
+      <p>There are no ongoing auctions currently</p>
+    }
+    else
+    {
+      @foreach (var item in Model)
+      {
+       <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <!-- Card Image -->
+            <a href="@Url.Action("Details", "Items", new { id = item.Id })">
+              <img src="@Url.Content($"~/{item.Images?.FirstOrDefault()}")" class="card-img-top" alt="Item Image">
+            </a>
+
+            <div class="card-body">
+              <h5 class="card-title">@item.Name</h5>
+              <p class="text-muted">Starting Price: @item.Price.ToString("C")</p>
+              <p class="text-muted">
+                Current Bid:
+                @{
+                  if (item.Bids == null || !item.Bids.Any())
+                  {
+                    <span>No bids yet</span>
+                  }
+                  else
+                  {
+                    var highestBid = item.Bids.Max(b => b.Price);
+                    <span>@highestBid.ToString("C")</span>
+                  }
+                }
+              </p>
+            </div>
+            <a href="@Url.Action("Details", "Items", new { id = item.Id })" class="btn btn-outline-primary w-100 mx-auto">
+              Place bid
+            </a>
+            
+            <div class="card-footer row">
+              <div class="col-6">
+                <small class="text-muted">Location: @item.Location</small><br>
+                <small class="text-muted">Ownership Period: @item.PeriodOfOwnership</small>
+              </div>
+              <div class="col-6">
+                Time left: <span id="countdown-@item.Id" data-enddate="@item.EndDate.ToString("o")"></span>
+              </div>
+            </div>
+          </div>
+       </div>
+      }
+    }
+
+  </div>
+</div>
