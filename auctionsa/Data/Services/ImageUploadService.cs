@@ -1,37 +1,32 @@
-﻿public class ImageUploadService
-{
-  private readonly IWebHostEnvironment _env;
+  private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+  private const long MaxFileSize = 5 * 1024 * 1024; //Ngfaki limit ka 5MB
 
-  public ImageUploadService(IWebHostEnvironment env)
+  private static string Sanitize(string input)
   {
-    _env = env;
+    var cleaned = new string(input.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_').ToArray());
+    return string.IsNullOrWhiteSpace(cleaned) ? "item" : cleaned;
   }
 
   public async Task<List<string>> SaveItemImagesAsync(string userEmail, string itemName, List<IFormFile> images)
   {
     var imagePaths = new List<string>();
 
-    // Step 1: Define user folder path
-    var userFolder = Path.Combine(_env.WebRootPath, "uploads", userEmail);
+    var safeUser = Sanitize(userEmail);
+    var safeItem = Sanitize(itemName);
 
-    // Check if user's folder exists, create if not
-    if (!Directory.Exists(userFolder))
-    {
-      Directory.CreateDirectory(userFolder);
-    }
+    var itemFolder = Path.Combine(_env.WebRootPath, "uploads", safeUser, safeItem);
+    Directory.CreateDirectory(itemFolder);
 
-    // Step 2: Create a subfolder for the item under the user's folder
-    var itemFolder = Path.Combine(userFolder, itemName);
-    if (!Directory.Exists(itemFolder))
-    {
-      Directory.CreateDirectory(itemFolder);
-    }
-
-    // Step 3: Save each image file in the item folder
     foreach (var image in images)
     {
-      var extension = Path.GetExtension(image.FileName);
-      var uniqueFileName = $"{Path.GetFileNameWithoutExtension(image.FileName)}_{Guid.NewGuid().ToString().Substring(0, 5)}{extension}";
+      var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+      if (!AllowedExtensions.Contains(extension) || image.Length == 0 || image.Length > MaxFileSize)
+      {
+        continue; 
+      }
+
+      var baseName = Sanitize(Path.GetFileNameWithoutExtension(image.FileName));
+      var uniqueFileName = $"{baseName}_{Guid.NewGuid().ToString().Substring(0, 5)}{extension}";
       var filePath = Path.Combine(itemFolder, uniqueFileName);
 
       using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -39,8 +34,7 @@
         await image.CopyToAsync(fileStream);
       }
 
-      var relativePath = Path.Combine("uploads", userEmail, itemName, uniqueFileName);
-      imagePaths.Add(relativePath.Replace("\\", "/"));
+      imagePaths.Add($"uploads/{safeUser}/{safeItem}/{uniqueFileName}");
     }
 
     return imagePaths;
