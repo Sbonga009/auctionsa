@@ -1,5 +1,14 @@
+public class ImageUploadService
+{
+  private readonly IWebHostEnvironment _env;
+
+  public ImageUploadService(IWebHostEnvironment env)
+  {
+    _env = env;
+  }
+
   private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-  private const long MaxFileSize = 5 * 1024 * 1024; //Ngfaki limit ka 5MB
+  private const long MaxFileSize = 5 * 1024 * 1024; // Ngfaki limit ka 5MB
 
   private static string Sanitize(string input)
   {
@@ -22,7 +31,7 @@
       var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
       if (!AllowedExtensions.Contains(extension) || image.Length == 0 || image.Length > MaxFileSize)
       {
-        continue; 
+        continue;
       }
 
       var baseName = Sanitize(Path.GetFileNameWithoutExtension(image.FileName));
