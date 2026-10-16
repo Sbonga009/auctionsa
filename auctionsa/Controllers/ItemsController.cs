@@ -101,23 +101,35 @@ namespace auctionsa.Controllers
     public async Task<IActionResult> PlaceBid(int itemId, double bidAmount, string comment)
     {
       var item = await _iservice.GetItemDetails(itemId);
-
       if (item == null)
       {
         return NotFound();
-      }
-
-      var highestBid = item.Bids.Any() ? item.Bids.Max(b => b.Price) : item.Price;
-      if (bidAmount <= highestBid)
-      {
-        ModelState.AddModelError("", "Bid must be higher than the current highest bid.");
-        return View("Details", item);
       }
 
       var user = await _userManager.GetUserAsync(User);
       if (user == null)
       {
         ModelState.AddModelError("", "User not found.");
+        return View("Details", item);
+      }
+      ViewBag.CurrentUserId = user.Id;
+
+      if (DateTime.Now >= item.EndDate)
+      {
+        ModelState.AddModelError("", "This auction has ended.");
+        return View("Details", item);
+      }
+
+      if (item.IdentityUserId == user.Id)
+      {
+        ModelState.AddModelError("", "You cannot bid on your own item.");
+        return View("Details", item);
+      }
+
+      var highestBid = item.Bids.Any() ? item.Bids.Max(b => b.Price) : item.Price;
+      if (bidAmount <= highestBid)
+      {
+        ModelState.AddModelError("", "Bid must be higher than the current highest bid.");
         return View("Details", item);
       }
 
@@ -132,7 +144,6 @@ namespace auctionsa.Controllers
       await _iservice.AddBidAsync(bid);
       return RedirectToAction("Details", new { id = itemId });
     }
-
 
     // GET: Items/Edit/5
     //public async Task<IActionResult> Edit(int? id)
