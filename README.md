@@ -32,3 +32,15 @@ You need the .NET 8 SDK and SQL Server (or SQL Server LocalDB).
 1. Clone the repo
 2. In `auctionsa/appsettings.json`, update the `DefaultConnection` string to point to your SQL Server
 3. Create the database
+4. Start the app
+
+## Still to do
+
+- Edit and delete listings
+- End auctions automatically and declare a winner
+- Image validation and unit tests
+
+## Author
+
+Sibongakonke Bhekiswayo, Piet Retief, South Africa
+GitHub: [Sbonga009](https://github.com/Sbonga009)
