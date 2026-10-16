@@ -1,12 +1,10 @@
-﻿@model auctionsa.Models.Item
+@model auctionsa.ViewModels.EditItemVM
 
 @{
   ViewData["Title"] = "Edit";
 }
 
 <h1>Edit</h1>
-
-<h4>Item</h4>
 <hr />
 <div class="row">
   <div class="col-md-4">
@@ -24,16 +22,6 @@
         <span asp-validation-for="Description" class="text-danger"></span>
       </div>
       <div class="form-group">
-        <label asp-for="Images" class="control-label"></label>
-        <input asp-for="Images" class="form-control" />
-        <span asp-validation-for="Images" class="text-danger"></span>
-      </div>
-      <div class="form-group form-check">
-        <label class="form-check-label">
-          <input class="form-check-input" asp-for="IsSold" /> @Html.DisplayNameFor(model => model.IsSold)
-        </label>
-      </div>
-      <div class="form-group">
         <label asp-for="Location" class="control-label"></label>
         <input asp-for="Location" class="form-control" />
         <span asp-validation-for="Location" class="text-danger"></span>
@@ -43,24 +31,14 @@
         <input asp-for="PeriodOfOwnership" class="form-control" />
         <span asp-validation-for="PeriodOfOwnership" class="text-danger"></span>
       </div>
-      <div class="form-group">
-        <label asp-for="IdentityUserId" class="control-label"></label>
-        <select asp-for="IdentityUserId" class="form-control" asp-items="ViewBag.IdentityUserId"></select>
-        <span asp-validation-for="IdentityUserId" class="text-danger"></span>
-      </div>
-      <div class="form-group">
+      <div class="form-group mt-3">
         <input type="submit" value="Save" class="btn btn-primary" />
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>
 </div>
 
-<div>
-  <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-  @{
-    await Html.RenderPartialAsync("_ValidationScriptsPartial");
-  }
+  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
