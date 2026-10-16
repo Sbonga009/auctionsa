@@ -1,4 +1,4 @@
-﻿using auctionsa.Data.Services;
+using auctionsa.Data.Services;
 using auctionsa.Models;
 using auctionsa.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -71,6 +71,12 @@ namespace auctionsa.Controllers
         }
 
         var imagePaths = await _imgservice.SaveItemImagesAsync(user.Email, newItem.Name, newItem.Images);
+        
+        if (imagePaths.Count == 0)
+        {
+          ModelState.AddModelError("", "Please upload at least one valid image (jpg, png, jpeg or webp, max 5 MB).");
+          return View(newItem);
+        }
 
         var item = new Item
         {
